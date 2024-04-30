@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler'
-
+import User from '../models/userModel.js'
 
 // Auth user/ set token
 // route POST /api/users/auth
@@ -13,8 +13,36 @@ const authUser = asyncHandler (async(req,res) =>{
 // Register new user
 // route POST /api/users
 const registerUser = asyncHandler (async(req,res) =>{
+    //get the data from the body
+    const { name, email, password } = req.body
+    // check if it already exists
+    const userExists = await User.findOne({
+        email
+    })
 
-    res.status(200).json({message: "Register User"})
+    if (userExists) {
+        res.status(400);
+        throw new Error('User Already Exists')
+    }
+
+    // if not exists create new one
+
+    const user = await User.create({
+        name,
+        email,
+        password
+    })
+
+    if (user) {
+        res.status(201).json({
+            _id: user._id,
+            name: user.name,
+            email:user.email
+        })
+    }else{
+        res.status(400);
+        throw new Error('Invalid User Data')
+    }
 })
 
 
